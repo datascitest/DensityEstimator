@@ -7,8 +7,8 @@ import java.util.logging.Logger;
  * Contains all the math operations needed for NADE class
  * @author wenzhe
  */
-public class Utils {
-    private final static Logger logger = Logger.getLogger(Utils.class.getName()); 
+public class MathUtils {
+    private final static Logger logger = Logger.getLogger(MathUtils.class.getName()); 
     
     public static double sigmoid(double x){
         return 1 / (1 + Math.exp(-x));
@@ -66,4 +66,23 @@ public class Utils {
     	
     	return result;
     }
+    
+    public static double[] substract(double scalar, double[] x){
+    	double[] result = new double[x.length];
+    	for (int i = 0; i < x.length; i++){
+    		result[i] = scalar - x[i];
+    	}
+    	
+    	return result;
+    }
+    
+    public static double sum(double[] x){
+    	double sum = 0; 
+    	for (int i = 0; i < x.length; i++){
+    		sum += x[i];
+    	}
+    	
+    	return sum;
+    }
+    
 }

@@ -18,6 +18,8 @@ public abstract class NADE implements DensityEstimator{
     protected int vSize;      // number of visual units
     protected double[] hBias; // bias parameters for hidden units
     protected double[] vBias; // bias parameters for visual units
+    protected int evaluteFrequency = 10;
+    protected double learningRate = 0.001;
     
     /**
      * Weight matrix, which is D by H dimension
@@ -111,4 +113,13 @@ public abstract class NADE implements DensityEstimator{
     public void setTiedWeight(){
         this.untiedWeights = false;
     }  
+    
+    public double getLearningRate(){
+    	return learningRate;
+    }
+    
+    
+    public void setLearningRate(double learningRate){
+    	this.learningRate = learningRate;
+    }
 }

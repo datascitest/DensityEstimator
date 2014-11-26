@@ -23,7 +23,7 @@ public interface DensityEstimator {
      * 
      * @param instance  the current instance
      */
-    void update(Instance instance);
+    void update(Instance instance, double proportion);
     
     /**
      * Compute the average log likelihood of the data, given 

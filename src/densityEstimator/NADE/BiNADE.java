@@ -6,7 +6,7 @@ import java.util.List;
 import densityEstimator.data.BinaryInstance;
 import densityEstimator.data.Data;
 import densityEstimator.data.Instance;
-import densityEstimator.utility.Utils;
+import densityEstimator.utility.MathUtils;
 
 public class BiNADE extends NADE{
     
@@ -22,9 +22,7 @@ public class BiNADE extends NADE{
      * likelihood of the data. This is used to monitor 
      * the convergence. 
      */
-    private int evaluteFrequency = 10;
-    
-    private double learningRate = 0.001;
+
     
     
     @Override
@@ -40,26 +38,64 @@ public class BiNADE extends NADE{
             
             // run SGD on each instance. 
             for (Instance instance : trainData.instances){
-                update(instance);
+                update(instance, 1);
             }
         }
     }
 
     @Override
-    public void update(Instance instance) {
-        double[] a = new double[hSize];
-        
+    public void update(Instance instance, double proportion) {
+    	
+    	// evaluate the probability and store the temporary results
+    	// this will make sure we have efficient gradient computation afterwards. 
+    	double[][] H = new double[hSize][vSize];
+    	double[] p_v = new double[vSize];
+    	double[] tmp = hBias.clone();
+    	
+        for (int i = 0; i < vSize; i++){
+             H[i] = MathUtils.sigmoid(tmp);
+             p_v[i] = MathUtils.sigmoid(vBias[i] + MathUtils.multiply(V[i], H[i]));
+             byte v_i = ((BinaryInstance)instance).getFeatures().get(i);
+             tmp = MathUtils.add(tmp, MathUtils.multiply(W[i], v_i));
+        }
+    	
+        // compute the gradient for vBais, hBias, W, V
+        // since we need to use the old gradient to do repetitive
+        // computation, there is no easy way to do sequential update instead
+        // of batch update after we compute all the gradients. 
+        double[] grad_a = new double[hSize];
         double[] grad_vBias = new double[vSize];
         double[] grad_hBias = new double[hSize];
         double[][] grad_W = new double[vSize][hSize];
         double[][] grad_V = new double[vSize][hSize];
         
+        double[] h_tmp = new double[hSize];
         for (int i = vSize-1; i >= 0; i--){
         	double v_i = ((BinaryInstance)(instance)).getFeatures().get(i);
-        	grad_vBias[i] = Utils.sigmoid(vBias[i] + ) - v_i;
+        	grad_vBias[i] = p_v[i] - v_i;
+        	grad_V[i] = MathUtils.multiply(H[i], p_v[i] - v_i);
+        	h_tmp = MathUtils.multiply(V[i], p_v[i] - v_i);
+        	double[] tmp_result = MathUtils.multiply(h_tmp, MathUtils.multiply(H[i], MathUtils.substract(1, H[i])));
+        	grad_hBias = MathUtils.add(hBias, tmp_result);
+        	grad_W[i] = MathUtils.multiply(grad_a, v_i);
+        	grad_a = MathUtils.add(grad_a, tmp_result);
         }
         
-        
+        // update hBias
+        for (int i = 0; i < hSize; i++){
+        	hBias[i] = hBias[i] - proportion * this.learningRate * grad_hBias[i];
+        }
+        // update vBias
+        for (int i = 0; i < vSize; i++){
+        	vBias[i] = vBias[i] -  proportion * this.learningRate * grad_vBias[i];
+        }
+        // update W and V
+        for (int i = 0; i < vSize; i++){
+        	for (int j = 0; j < hSize; j++){
+        		W[i][j] = W[i][j] -  proportion * this.learningRate * grad_W[i][j];
+        		V[i][j] = V[i][j] -  proportion * this.learningRate * grad_V[i][j];
+        	}
+        } 
     }
 
     @Override
@@ -77,15 +113,14 @@ public class BiNADE extends NADE{
      */
     @Override
     public double evaluate(Instance instance) {
-        // TODO Auto-generated method stub
         double[] a = hBias.clone();
         double p = 0;
         for (int i = 0; i < vSize; i++){
-            double[] h = Utils.sigmoid(a);
-            double tmp = Utils.sigmoid(vBias[i] + Utils.multiply(V[i], h));
+            double[] h = MathUtils.sigmoid(a);
+            double tmp = MathUtils.sigmoid(vBias[i] + MathUtils.multiply(V[i], h));
             byte v_i = ((BinaryInstance)instance).getFeatures().get(i);
             p += v_i * Math.log(tmp) + (1-v_i) * Math.log(1-tmp);
-            a = Utils.add(a, Utils.multiply(W[i], v_i));
+            a = MathUtils.add(a, MathUtils.multiply(W[i], v_i));
         }
         
         return p;
@@ -103,12 +138,5 @@ public class BiNADE extends NADE{
         
     }
     
-    public double getLearningRate(){
-    	return learningRate;
-    }
-    
-    
-    public void setLearningRate(double learningRate){
-    	this.learningRate = learningRate;
-    }
+
 }
