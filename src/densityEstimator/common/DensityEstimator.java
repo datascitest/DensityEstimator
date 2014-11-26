@@ -4,7 +4,7 @@ import densityEstimator.data.Instance;
 
 
 /**
- * All the density estimator models should implement
+ * All the density estimation models should implement
  * this interface. 
  * 
  * @author wenzhe

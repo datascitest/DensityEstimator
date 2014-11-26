@@ -20,11 +20,18 @@ public abstract class NADE implements DensityEstimator{
     protected double[] vBias; // bias parameters for visual units
     
     /**
-     * Weight matrix, which is [hSize] by [vSize] dimension
+     * Weight matrix, which is D by H dimension
      * where H is the number of hidden units, and D
-     * is the size of visual units. 
+     * is the size of visual units. This weight matrix connects
+     * hidden layer and visual layer
      */
     protected double[][] W;
+    
+    /**
+     * Weight matrix, which is D by H dimensional. This weight 
+     * matrix connects hidden layer to output layer. 
+     */
+    protected double[][] V;
     
     protected int maxIterations = 500;
     
@@ -33,12 +40,6 @@ public abstract class NADE implements DensityEstimator{
      * for visual-hidden and hidden-output
      */
     protected boolean untiedWeights = true;
-    
-    /**
-     * Weight matrix, which is [hSize] by [vSize] dimension
-     * We only use this weight matrix if we define unitedWeights = true
-     */
-    protected double[][] V;
     
     /**
      * Initialize all the parameters. 
@@ -52,17 +53,17 @@ public abstract class NADE implements DensityEstimator{
         for (int i = 0; i < vSize; i++)
             vBias[i] = Math.random();
         
-        W = new double[hSize][vSize];
-        for (int i = 0; i < hSize; i++){
-            for (int j = 0; j < vSize; j++){
+        W = new double[vSize][hSize];
+        for (int i = 0; i < vSize; i++){
+            for (int j = 0; j < hSize; j++){
                 W[i][j] = Math.random();
             }
         }
         
         if (untiedWeights == true){
-            V = new double[hSize][vSize];
-            for (int i = 0; i < hSize; i++){
-                for (int j = 0; j < vSize; j++){
+            V = new double[vSize][hSize];
+            for (int i = 0; i < vSize; i++){
+                for (int j = 0; j < hSize; j++){
                     V[i][j] = Math.random();
                 }
             }

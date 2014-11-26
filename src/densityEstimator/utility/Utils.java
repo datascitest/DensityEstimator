@@ -37,4 +37,33 @@ public class Utils {
         
         return dotSum;
     }
+    
+    public static double[] add(double[] x, double y[]){
+    	if (x.length < 1 || x.length != y.length){
+            String errorMsg = "The input array has dimension 0 or " +
+            		"two arrays do not have the same dimension";
+            logger.log(Level.SEVERE, errorMsg);
+            System.out.println(errorMsg);
+        }
+    	double[] result = new double[x.length];
+    	for (int i = 0; i < x.length; i++)
+    		result[i] = x[i] + y[i];
+    	
+    	return result;
+    }
+    
+    public static double[] multiply(double[] x, double scalar){
+    	if (x.length < 1){
+    		String errorMsg = "The input array has dimension 0";
+            logger.log(Level.SEVERE, errorMsg);
+            System.out.println(errorMsg);
+    	}
+    	
+    	double[] result = new double[x.length];
+    	for (int i = 0; i < x.length; i++){
+    		result[i] = x[i] * scalar;
+    	}
+    	
+    	return result;
+    }
 }

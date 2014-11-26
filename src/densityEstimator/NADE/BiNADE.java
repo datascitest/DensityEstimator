@@ -3,6 +3,7 @@ package densityEstimator.NADE;
 import java.io.File;
 import java.util.List;
 
+import densityEstimator.data.BinaryInstance;
 import densityEstimator.data.Data;
 import densityEstimator.data.Instance;
 import densityEstimator.utility.Utils;
@@ -22,6 +23,8 @@ public class BiNADE extends NADE{
      * the convergence. 
      */
     private int evaluteFrequency = 10;
+    
+    private double learningRate = 0.001;
     
     
     @Override
@@ -44,7 +47,18 @@ public class BiNADE extends NADE{
 
     @Override
     public void update(Instance instance) {
-        // TODO Auto-generated method stub
+        double[] a = new double[hSize];
+        
+        double[] grad_vBias = new double[vSize];
+        double[] grad_hBias = new double[hSize];
+        double[][] grad_W = new double[vSize][hSize];
+        double[][] grad_V = new double[vSize][hSize];
+        
+        for (int i = vSize-1; i >= 0; i--){
+        	double v_i = ((BinaryInstance)(instance)).getFeatures().get(i);
+        	grad_vBias[i] = Utils.sigmoid(vBias[i] + ) - v_i;
+        }
+        
         
     }
 
@@ -58,16 +72,23 @@ public class BiNADE extends NADE{
         return result * 1.0/(data.instances.size());
     }
 
+    /**
+     * Compute the log probability of instance
+     */
     @Override
     public double evaluate(Instance instance) {
         // TODO Auto-generated method stub
         double[] a = hBias.clone();
-        double p = 1;
+        double p = 0;
         for (int i = 0; i < vSize; i++){
             double[] h = Utils.sigmoid(a);
+            double tmp = Utils.sigmoid(vBias[i] + Utils.multiply(V[i], h));
+            byte v_i = ((BinaryInstance)instance).getFeatures().get(i);
+            p += v_i * Math.log(tmp) + (1-v_i) * Math.log(1-tmp);
+            a = Utils.add(a, Utils.multiply(W[i], v_i));
         }
         
-        return 0;
+        return p;
     }
 
     @Override
@@ -82,4 +103,12 @@ public class BiNADE extends NADE{
         
     }
     
+    public double getLearningRate(){
+    	return learningRate;
+    }
+    
+    
+    public void setLearningRate(double learningRate){
+    	this.learningRate = learningRate;
+    }
 }
