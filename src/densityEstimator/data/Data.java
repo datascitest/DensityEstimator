@@ -20,6 +20,10 @@ public class Data {
         this.instances = instances;
         init();
     }
+    
+    public Instance getInstance(int idx){
+        return instances.get(idx);
+    }
    
     public Data(){}
     

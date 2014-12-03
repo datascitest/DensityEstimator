@@ -19,7 +19,7 @@ public abstract class NADE implements DensityEstimator{
     protected double[] hBias; // bias parameters for hidden units
     protected double[] vBias; // bias parameters for visual units
     protected int evaluteFrequency = 10;
-    protected double learningRate = 0.001;
+    protected double learningRate = 0.05;
     
     /**
      * Weight matrix, which is D by H dimension
@@ -35,7 +35,7 @@ public abstract class NADE implements DensityEstimator{
      */
     protected double[][] V;
     
-    protected int maxIterations = 500;
+    protected int maxIterations = 10000;
     
     /**
      * If untiedWeights == true, then we use different weight matrix

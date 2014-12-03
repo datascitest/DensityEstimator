@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -36,10 +37,12 @@ public class Mushroom {
         while ((sCurrentLine = br.readLine()) != null){
         	String[] chars = sCurrentLine.split(",");
         	for (int i = 1; i < chars.length; i++){
-        		if (characterSet.get(i-1) == null){
+        	    
+        		if (characterSet.size() < i){
         			Map<String, Byte> s = new HashMap<String, Byte>();
         			s.put(chars[i], (byte) 1);
-        			characterSet.set(i-1, s);
+        			
+        			characterSet.add(s);
         		}else{
         			Map<String, Byte> s = characterSet.get(i-1);
         			if (!s.containsKey(chars[i])){
@@ -54,6 +57,9 @@ public class Mushroom {
         Data  data = new Data();
         List<Instance> instances  = new ArrayList<Instance>();
         List<Integer> sizes = new ArrayList<Integer>();
+        for (int i = 0; i < characterSet.size(); i++){
+            sizes.add(characterSet.get(i).size());
+        }
         br = new BufferedReader(new FileReader(file));
         while ((sCurrentLine = br.readLine()) != null){
         	String[] chars = sCurrentLine.split(",");
@@ -74,7 +80,10 @@ public class Mushroom {
 	
 	private List<Byte> generate(Byte str, Integer size){
 		
-		List<Byte> result = new ArrayList<Byte>(size);
+		List<Byte> result = new ArrayList<Byte>();
+		for (int i = 0; i < size; i++){
+		    result.add((byte) 0);
+		}
 		result.set(str-1, (byte) 1);
 		return result;
 	}

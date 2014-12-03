@@ -3,6 +3,7 @@ package densityEstimator.NADE;
 import java.util.ArrayList;
 import java.util.List;
 
+import densityEstimator.data.BinaryInstance;
 import densityEstimator.data.Data;
 import densityEstimator.data.Instance;
 import densityEstimator.utility.MathUtils;
@@ -21,14 +22,21 @@ public class MixNADE {
     public Data trainData;
     public Data testData;
     
-    public static final int MAX_ITERATIONS =  100;
+    public static final int MAX_ITERATIONS =  10000000;
     
-    public MixNADE(int numOfComponents){
+    public MixNADE(int numOfComponents, Data trainData){
     	// create list of mixture models.
     	this.numOfComponents = numOfComponents;
     	mixtureModels = new ArrayList<NADE>(numOfComponents);
+    	for (int i = 0; i < numOfComponents; i++){
+    	    mixtureModels.add(new BiNADE(100, trainData.getInstance(0).size(), trainData));
+    	}
     	mixingRate = new double[numOfComponents];
+    	for (int k = 0; k < numOfComponents; k++){
+    	    mixingRate[k] = 1.0/numOfComponents;
+    	}
     	instanceMixedRate = new double[trainData.numOfInstances][numOfComponents];
+    	this.trainData = trainData;
     }
     
     /**
@@ -36,6 +44,11 @@ public class MixNADE {
      */
     public void learn(){
     	for (int itr = 0; itr < MAX_ITERATIONS; itr++){
+    	    
+    	    if (itr % 10 == 0){
+    	        System.out.println(avgLog(trainData));
+    	    }
+    	    
     		/**
     		 * E-step: compute the mixing rate for each instance. 
     		 * Computed as:  p(x|m_i)/(p(x|m_1) + ... + p(x|m_n)) 
@@ -56,6 +69,7 @@ public class MixNADE {
     		/**
     		 * M-step:  run gradient descent for each components
     		 */
+    		mixingRate = new double[numOfComponents];
     		for (int i = 0; i < instanceMixedRate.length; i++){
     			for (int k = 0; k < numOfComponents; k++){
     				mixingRate[k] += instanceMixedRate[i][k];
@@ -77,19 +91,25 @@ public class MixNADE {
     public double avgLog(Data data){
         double sum = 0.0;
         for (Instance instance : data.instances){
-        	sum += evaluate(instance);
+        	sum += computeLogProb(instance);
         }
         
         return sum * 1.0/data.instances.size();
     }
     
-    public double evaluate(Instance instance){
+    /**
+     * return logp(x) = log(p(x|z_1)p(z_1) + p(x|z_2)p(z_2),...)
+     * @param instance
+     * @return
+     */
+    public double computeLogProb(Instance instance){
         double result = 0;
         for (int k = 0; k < numOfComponents; k++){
         	BiNADE model = (BiNADE) mixtureModels.get(k);
-        	result += model.evaluate(instance) * mixingRate[k];
+        	result += model.evaluate1(instance) * mixingRate[k];
         }
-        
-        return result;
+        return Math.log(result);
     }
+    
+
 }

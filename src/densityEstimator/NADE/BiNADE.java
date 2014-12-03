@@ -1,6 +1,7 @@
 package densityEstimator.NADE;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import densityEstimator.data.BinaryInstance;
@@ -23,12 +24,22 @@ public class BiNADE extends NADE{
      * the convergence. 
      */
 
+    public BiNADE(int hSize, int vSize, Data trainData){
+        this.hSize = hSize;
+        this.vSize = vSize;
+        this.trainData = trainData;
+        avgLogHistory = new ArrayList<Double>();
+        init();
+    }
+    
+    
     
     
     @Override
     public void learn() {
         // either reach iterations or already converged
         for (int itr = 0; itr < maxIterations; itr++){
+            //System.out.println("running " + itr + "st iteration");
             if (itr % evaluteFrequency == 0){
                 // evalute on the whole data set and record the avg log likelihood
                 double avgLogLikelihood = avgLog(trainData);
@@ -48,7 +59,7 @@ public class BiNADE extends NADE{
     	
     	// evaluate the probability and store the temporary results
     	// this will make sure we have efficient gradient computation afterwards. 
-    	double[][] H = new double[hSize][vSize];
+    	double[][] H = new double[vSize][hSize];
     	double[] p_v = new double[vSize];
     	double[] tmp = hBias.clone();
     	
@@ -125,7 +136,27 @@ public class BiNADE extends NADE{
         
         return p;
     }
-
+    
+    /**
+     * return full probability (not log)
+     */
+    public double evaluate1(Instance instance) {
+        double[] a = hBias.clone();
+        double p = 1;
+        for (int i = 0; i < vSize; i++){
+            double[] h = MathUtils.sigmoid(a);
+            double tmp = MathUtils.sigmoid(vBias[i] + MathUtils.multiply(V[i], h));
+            byte v_i = ((BinaryInstance)instance).getFeatures().get(i);
+            p *= Math.pow(tmp, v_i) * Math.pow(1-tmp, 1-v_i);
+            a = MathUtils.add(a, MathUtils.multiply(W[i], v_i));
+        }
+        
+        if (p < 1e-32){
+            p = 1e-32;
+        }
+        return p;
+    }
+    
     @Override
     public void saveParameters() {
         // TODO Auto-generated method stub

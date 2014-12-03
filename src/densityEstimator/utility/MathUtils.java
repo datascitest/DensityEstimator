@@ -11,7 +11,16 @@ public class MathUtils {
     private final static Logger logger = Logger.getLogger(MathUtils.class.getName()); 
     
     public static double sigmoid(double x){
-        return 1 / (1 + Math.exp(-x));
+        double result = 1 / (1 + Math.exp(-x));
+        if (result > 0.999995){
+            result = 0.999995;
+        }
+        
+        if (result < 0.000001){
+            result = 0.000001;
+        }
+        
+        return result;
     }
     
     public static double[] sigmoid(double[] x){
